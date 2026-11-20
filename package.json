@@ -1,0 +1,22 @@
+{
+  "name": "tubot-sf-proxy",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy --env \"\"",
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "cf-typegen": "wrangler types",
+    "deploy:staging": "wrangler deploy --env staging",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^5.5.2",
+    "wrangler": "^4.149.0"
+  },
+  "dependencies": {
+    "partyserver": "^0.5.10"
+  }
+}

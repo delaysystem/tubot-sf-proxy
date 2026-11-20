@@ -1,0 +1,31 @@
+{
+  "$schema":"node_modules/wrangler/config-schema.json",
+  "name":"tubot-sf-proxy",
+  "main":"src/index.ts",
+  "compatibility_date":"2026-10-06",
+  "workers_dev":true,
+  "migrations":[{"tag":"v1","new_sqlite_classes":["MyDurableObject"]},{"tag":"v2","new_sqlite_classes":["ProxyRegistration"]}],
+  "durable_objects":{"bindings":[{"name":"REGISTRATIONS","class_name":"ProxyRegistration"}]},
+  "services":[{"binding":"SF_BROKER","service":"tubot-sf-auth","entrypoint":"MessagingProxyBroker"},{"binding":"AGENTCODE","service":"agentcode","entrypoint":"AgentTurnBroker"}],
+  "vars":{"PROXY_PUBLIC_ORIGIN":"https://tubot-sf-proxy.emalteaproductions.workers.dev"},
+  "observability":{"enabled":true,
+    // Billing: automatic invocation logs + traces bill per persisted event
+    // (Oct 2026: ~21M events ≈ $0.72). App console logs still persist.
+    "logs":{"enabled":true,"invocation_logs":false},"traces":{"enabled":false}},
+  "upload_source_maps":true,
+  "env":{"staging":{
+    "name":"tubot-sf-proxy-staging",
+    "durable_objects":{"bindings":[{"name":"REGISTRATIONS","class_name":"ProxyRegistration"}]},
+    "services":[{"binding":"SF_BROKER","service":"tubot-sf-auth-staging","entrypoint":"MessagingProxyBroker"},{"binding":"AGENTCODE","service":"agentcode-gateway-staging","entrypoint":"AgentTurnBroker"}],
+    "vars":{"PROXY_PUBLIC_ORIGIN":"https://tubot-sf-proxy-staging.emalteaproductions.workers.dev",
+      // Staging-only: release chat turns right after verify+handoff pass;
+      // the alarm executor runs the agent turn async. Production keeps the
+      // held inline path until staging proves out (owner-approved 202-async).
+      "ASYNC_ACCEPT":"on",
+      // Staging-only: park async turns after light checks + handoff and prove
+      // the transcript in the executor, concurrently with the agent turn
+      // (submit stays gated on the proof). Requires ASYNC_ACCEPT.
+      // Production (var unset) keeps accept-time verify.
+      "VERIFY_LATE":"on"}
+  }}
+}
